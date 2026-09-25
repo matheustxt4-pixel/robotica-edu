@@ -3,16 +3,34 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 
+// Helper para tratar falhas em módulos dinâmicos após novos deploys na Vercel
+function safeLazy<T extends React.ComponentType<any>>(importFn: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      return await importFn();
+    } catch (error) {
+      const isReloaded = sessionStorage.getItem('chunk_reload_retry');
+      if (!isReloaded) {
+        sessionStorage.setItem('chunk_reload_retry', 'true');
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      sessionStorage.removeItem('chunk_reload_retry');
+      throw error;
+    }
+  });
+}
+
 // Lazy loading das páginas para otimização de performance e code splitting PWA
-const Home = lazy(() => import('../pages/Home').then(m => ({ default: m.Home })));
-const Login = lazy(() => import('../pages/Login').then(m => ({ default: m.Login })));
-const MapPage = lazy(() => import('../pages/MapPage').then(m => ({ default: m.MapPage })));
-const LessonPage = lazy(() => import('../pages/LessonPage').then(m => ({ default: m.LessonPage })));
-const GamePage = lazy(() => import('../pages/GamePage').then(m => ({ default: m.GamePage })));
-const RankingPage = lazy(() => import('../pages/RankingPage').then(m => ({ default: m.RankingPage })));
-const TeacherDashboard = lazy(() => import('../pages/TeacherDashboard').then(m => ({ default: m.TeacherDashboard })));
-const ProfilePage = lazy(() => import('../pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const LegoPage = lazy(() => import('../pages/LegoPage').then(m => ({ default: m.LegoPage })));
+const Home = safeLazy(() => import('../pages/Home').then(m => ({ default: m.Home })));
+const Login = safeLazy(() => import('../pages/Login').then(m => ({ default: m.Login })));
+const MapPage = safeLazy(() => import('../pages/MapPage').then(m => ({ default: m.MapPage })));
+const LessonPage = safeLazy(() => import('../pages/LessonPage').then(m => ({ default: m.LessonPage })));
+const GamePage = safeLazy(() => import('../pages/GamePage').then(m => ({ default: m.GamePage })));
+const RankingPage = safeLazy(() => import('../pages/RankingPage').then(m => ({ default: m.RankingPage })));
+const TeacherDashboard = safeLazy(() => import('../pages/TeacherDashboard').then(m => ({ default: m.TeacherDashboard })));
+const ProfilePage = safeLazy(() => import('../pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const LegoPage = safeLazy(() => import('../pages/LegoPage').then(m => ({ default: m.LegoPage })));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-[60vh] flex items-center justify-center font-display">
