@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
 import { auth, db, isFirebaseDemo } from '../config/firebase';
 import { UserProfile } from '../types';
@@ -199,7 +199,34 @@ class AuthService {
   }
 
   /**
-   * Login Simplificado do Aluno por Apelido, Senha e Código da Sala (ex: ROB-4821)
+   * Busca perfil de aluno pelo apelido no Firestore
+   */
+  public async getStudentProfileByNickname(nickname: string): Promise<UserProfile | null> {
+    if (isFirebaseDemo) return null;
+    try {
+      const clean = nickname.toLowerCase().trim();
+      const q = query(
+        collection(db, 'users'),
+        where('role', '==', 'student')
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const found = snap.docs.find(d => {
+          const data = d.data() as UserProfile;
+          return data.nickname?.toLowerCase().trim() === clean || data.name?.toLowerCase().trim() === clean;
+        });
+        if (found) {
+          return found.data() as UserProfile;
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao buscar perfil de aluno por apelido no Firestore:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Login / Cadastro do Aluno por Apelido, Senha e Código da Sala (ex: ROB-YQHN)
    */
   public async loginStudentWithCode(params: {
     nickname: string;
@@ -212,50 +239,75 @@ class AuthService {
   }): Promise<UserProfile> {
     const { nickname, password = '', classCode, grade, avatar, mascot = 'robi', isRegisterMode = false } = params;
     const cleanKey = nickname.toLowerCase().trim();
+    const upperCode = classCode.toUpperCase().trim();
     const store = this.getRegisteredStudentsMap();
-    const existing = store[cleanKey];
+    const existingRecord = store[cleanKey];
 
-    if (!isRegisterMode && existing) {
-      // Se está tentando fazer login em uma conta existente, verifica a senha
-      if (existing.password && password && existing.password !== password) {
+    // Salvar última turma válida usada no navegador
+    try {
+      localStorage.setItem('robotica_last_class_code', upperCode);
+    } catch {}
+
+    // ==========================================
+    // 1. FLUXO DE LOGIN ("Já Tenho Conta")
+    // ==========================================
+    if (!isRegisterMode) {
+      let profile: UserProfile | null = existingRecord ? existingRecord.profile : null;
+
+      // Se não encontrou na memória local, tenta buscar no Firestore
+      if (!profile && !isFirebaseDemo) {
+        profile = await this.getStudentProfileByNickname(nickname);
+      }
+
+      // Se NENHUM perfil for encontrado -> ERRO! Bloqueia criação acidental por erro de digitação
+      if (!profile) {
+        throw new Error(`O apelido "${nickname}" não foi encontrado nesta turma! Verifique a grafia exata ou clique na aba "Criar Nova Conta" se este for seu primeiro acesso.`);
+      }
+
+      // Verificar senha se o cadastro possui senha definida
+      if (existingRecord?.password && password && existingRecord.password !== password) {
         throw new Error('Senha incorreta para esta conta de aluno! Verifique seus dados.');
       }
 
-      let latestProfile = existing.profile;
-
-      // Buscar perfil mais recente no Firestore se não for demo
-      if (!isFirebaseDemo) {
-        const firestoreProfile = await this.getUserProfile(existing.profile.uid);
+      // Sincronizar dados mais recentes do Firestore
+      if (!isFirebaseDemo && profile.uid) {
+        const firestoreProfile = await this.getUserProfile(profile.uid);
         if (firestoreProfile) {
-          latestProfile = { ...existing.profile, ...firestoreProfile };
+          profile = { ...profile, ...firestoreProfile };
         }
       }
 
-      this.saveRegisteredStudentToMap(nickname, existing.password, latestProfile);
-      this.setLocalUser(latestProfile);
-      return latestProfile;
+      this.saveRegisteredStudentToMap(nickname, existingRecord?.password || password, profile);
+      this.setLocalUser(profile);
+      return profile;
     }
 
-    if (isRegisterMode && existing) {
-      // Se está tentando registrar um apelido que já existe
-      throw new Error(`O apelido "${nickname}" já possui uma conta cadastrada! Escolha outro apelido ou clique em "Já Tenho Conta".`);
+    // ==========================================
+    // 2. FLUXO DE CADASTRO ("Criar Nova Conta")
+    // ==========================================
+    let profileInUse: UserProfile | null = existingRecord ? existingRecord.profile : null;
+    if (!profileInUse && !isFirebaseDemo) {
+      profileInUse = await this.getStudentProfileByNickname(nickname);
+    }
+
+    if (profileInUse) {
+      throw new Error(`O apelido "${nickname}" já possui uma conta cadastrada! Escolha outro apelido ou clique na aba "Já Tenho Conta" para entrar.`);
     }
 
     // Buscar a turma correspondente pelo código informado
     const classRoom = await classService.getClassByCode(classCode);
-    const upperCode = classCode.toUpperCase().trim();
-    if (isRegisterMode && !classRoom && upperCode !== 'ROB-4821' && upperCode !== 'ROB-YQHN') {
+    if (!classRoom && upperCode !== 'ROB-4821' && upperCode !== 'ROB-YQHN') {
       throw new Error(`A turma com código "${classCode}" não foi encontrada! Verifique o código fornecido pelo seu professor.`);
     }
 
-    const resolvedClassId = classRoom ? classRoom.id : classCode;
+    const resolvedClassId = classRoom ? classRoom.id : upperCode;
     const resolvedTeacherId = classRoom ? classRoom.teacherId : undefined;
     const resolvedSchoolId = classRoom ? classRoom.schoolId : 'school_demo';
     const resolvedGrade = classRoom ? classRoom.grade : grade;
 
     // Criar novo perfil de aluno
     const studentProfile: UserProfile = {
-      uid: existing?.profile.uid || `student_${cleanKey.replace(/\s+/g, '_')}_${Date.now()}`,
+      uid: `student_${cleanKey.replace(/\s+/g, '_')}_${Date.now()}`,
       name: nickname,
       nickname,
       email: `${cleanKey}@aluno.local`,
@@ -272,17 +324,17 @@ class AuthService {
       createdAt: new Date().toISOString()
     };
 
-    // Salva no banco de alunos cadastrados
+    // Salva no banco local
     this.saveRegisteredStudentToMap(nickname, password, studentProfile);
 
-    // Registra o aluno como membro da turma no classService
-    await classService.joinClass(studentProfile.uid, studentProfile.nickname, studentProfile.avatar, classCode);
+    // Registra o aluno como membro da turma
+    await classService.joinClass(studentProfile.uid, studentProfile.nickname, studentProfile.avatar, upperCode);
 
     if (!isFirebaseDemo) {
       try {
         await this.saveUserProfile(studentProfile);
       } catch (err) {
-        console.warn('Salvando perfil de aluno no armazenamento local devido a permissão Firestore:', err);
+        console.warn('Salvando perfil de aluno no armazenamento local:', err);
       }
     }
 
