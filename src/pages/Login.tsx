@@ -85,7 +85,15 @@ export const Login: React.FC = () => {
       }
       navigate('/teacher');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Erro ao realizar login de professor. Verifique seus dados.');
+      if (err.code === 'auth/configuration-not-found' || err.message?.includes('auth/configuration-not-found')) {
+        setErrorMsg('Ative o login por "E-mail/Senha" no painel do Firebase: Vá em Firebase -> Authentication -> Método de Login e ative "E-mail/senha".');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setErrorMsg('Este e-mail já está cadastrado! Clique em "Já tenho conta" para fazer login.');
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        setErrorMsg('E-mail ou senha incorretos. Verifique suas credenciais.');
+      } else {
+        setErrorMsg(err.message || 'Erro ao realizar login de professor. Verifique seus dados.');
+      }
     } finally {
       setLoading(false);
     }
