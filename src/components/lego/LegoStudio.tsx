@@ -199,11 +199,11 @@ export const LegoStudio: React.FC<LegoStudioProps> = ({ onPublishSuccess }) => {
   };
 
   // Confirmar Publicação na Rede Social da Turma
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = async () => {
     if (!user || bricks.length === 0 || isPublishing) return;
     setIsPublishing(true);
 
-    legoService.createPost({
+    await legoService.createPost({
       authorId: user.uid,
       authorName: user.nickname || user.name || 'Aluno Robótica',
       authorAvatar: user.avatar || 'avatar_1',

@@ -1,3 +1,5 @@
+import { doc, setDoc, getDocs, collection, query, deleteDoc } from 'firebase/firestore';
+import { db, isFirebaseDemo } from '../config/firebase';
 import { LegoPost, LegoBrick } from '../types';
 
 const STORAGE_KEY = 'robotica_lego_posts_v1';
@@ -65,13 +67,39 @@ class LegoService {
     }
   }
 
-  public getPosts(): LegoPost[] {
+  /**
+   * Obtém as publicações do Mural LEGO do banco de dados (Firestore) com fallback local
+   */
+  public async getPosts(): Promise<LegoPost[]> {
+    if (!isFirebaseDemo) {
+      try {
+        const q = query(collection(db, 'lego_posts'));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const firestorePosts: LegoPost[] = [];
+          snap.docs.forEach(d => {
+            firestorePosts.push(d.data() as LegoPost);
+          });
+          firestorePosts.sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          this.saveStoredPosts(firestorePosts);
+          return firestorePosts;
+        }
+      } catch (e) {
+        console.warn('Erro ao buscar posts do LEGO no Firestore:', e);
+      }
+    }
+
     return this.getStoredPosts().sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }
 
-  public createPost(params: {
+  /**
+   * Publica uma nova criação no Mural LEGO (Firestore + Local)
+   */
+  public async createPost(params: {
     authorId: string;
     authorName: string;
     authorAvatar: string;
@@ -82,7 +110,7 @@ class LegoService {
     grade: number;
     title: string;
     bricks: LegoBrick[];
-  }): LegoPost {
+  }): Promise<LegoPost> {
     const newPost: LegoPost = {
       id: `lego_post_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       authorId: params.authorId,
@@ -103,10 +131,21 @@ class LegoService {
     posts.unshift(newPost);
     this.saveStoredPosts(posts);
 
+    if (!isFirebaseDemo) {
+      try {
+        await setDoc(doc(db, 'lego_posts', newPost.id), newPost);
+      } catch (e) {
+        console.error('Erro ao salvar publicação LEGO no Firestore:', e);
+      }
+    }
+
     return newPost;
   }
 
-  public toggleLike(postId: string, studentId: string): LegoPost | null {
+  /**
+   * Alterna curtida no post do Mural LEGO
+   */
+  public async toggleLike(postId: string, studentId: string): Promise<LegoPost | null> {
     const posts = this.getStoredPosts();
     const idx = posts.findIndex(p => p.id === postId);
     if (idx === -1) return null;
@@ -123,14 +162,35 @@ class LegoService {
 
     posts[idx] = post;
     this.saveStoredPosts(posts);
+
+    if (!isFirebaseDemo) {
+      try {
+        await setDoc(doc(db, 'lego_posts', postId), post, { merge: true });
+      } catch (e) {
+        console.error('Erro ao atualizar curtida no Firestore:', e);
+      }
+    }
+
     return post;
   }
 
-  public deletePost(postId: string, studentId: string): boolean {
+  /**
+   * Exclui post do Mural LEGO
+   */
+  public async deletePost(postId: string, studentId: string): Promise<boolean> {
     const posts = this.getStoredPosts();
     const filtered = posts.filter(p => p.id !== postId || p.authorId !== studentId);
     if (filtered.length !== posts.length) {
       this.saveStoredPosts(filtered);
+
+      if (!isFirebaseDemo) {
+        try {
+          await deleteDoc(doc(db, 'lego_posts', postId));
+        } catch (e) {
+          console.error('Erro ao excluir post do Firestore:', e);
+        }
+      }
+
       return true;
     }
     return false;
@@ -138,4 +198,3 @@ class LegoService {
 }
 
 export const legoService = new LegoService();
-

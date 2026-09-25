@@ -30,22 +30,29 @@ export const LegoFeed: React.FC<LegoFeedProps> = ({ onGoToStudio }) => {
     grade?: number;
   } | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadPosts();
   }, []);
 
-  const loadPosts = () => {
-    const list = legoService.getPosts();
-    setPosts(list);
+  const loadPosts = async () => {
+    setLoading(true);
+    try {
+      const list = await legoService.getPosts();
+      setPosts(list);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Alternar Curtida ❤️ no Post
-  const handleToggleLike = (postId: string) => {
+  const handleToggleLike = async (postId: string) => {
     if (!user) return;
     playSound('correct');
     setLikeAnimId(postId);
 
-    const updated = legoService.toggleLike(postId, user.uid);
+    const updated = await legoService.toggleLike(postId, user.uid);
     if (updated) {
       setPosts(prev => prev.map(p => (p.id === postId ? updated : p)));
     }
