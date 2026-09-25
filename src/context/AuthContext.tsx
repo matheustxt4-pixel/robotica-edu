@@ -12,6 +12,7 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   registerTeacher: (name: string, email: string, pass: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   loginStudentWithCode: (params: {
     nickname: string;
     password?: string;
@@ -93,6 +94,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const profile = await authService.registerTeacher(name, email, pass);
+      setUser(profile);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const profile = await authService.loginWithGoogle();
       setUser(profile);
     } finally {
       setIsLoading(false);
@@ -207,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         loginWithEmail,
         registerTeacher,
+        loginWithGoogle,
         loginStudentWithCode,
         loginAsDemoStudent,
         loginAsDemoTeacher,

@@ -1,6 +1,8 @@
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
   User as FirebaseUser
@@ -121,6 +123,51 @@ class AuthService {
     };
 
     await this.saveUserProfile(profile);
+    this.setLocalUser(profile);
+    return profile;
+  }
+
+  /**
+   * Login/Cadastro com Conta do Google (Professores)
+   */
+  public async loginWithGoogle(): Promise<UserProfile> {
+    if (isFirebaseDemo) {
+      const demoTeacher: UserProfile = {
+        uid: 'teacher_google_' + Date.now(),
+        name: 'Professor Google',
+        nickname: 'Prof. Google',
+        email: 'professor@gmail.com',
+        role: 'teacher',
+        avatar: 'avatar_gear_master',
+        xp: 0,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      };
+      this.setLocalUser(demoTeacher);
+      return demoTeacher;
+    }
+
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    let profile = await this.getUserProfile(cred.user.uid);
+
+    if (!profile) {
+      profile = {
+        uid: cred.user.uid,
+        name: cred.user.displayName || cred.user.email?.split('@')[0] || 'Professor',
+        nickname: cred.user.displayName?.split(' ')[0] || cred.user.email?.split('@')[0] || 'Prof',
+        email: cred.user.email || '',
+        role: 'teacher',
+        avatar: 'avatar_gear_master',
+        xp: 0,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      };
+      await this.saveUserProfile(profile);
+    }
+
     this.setLocalUser(profile);
     return profile;
   }
