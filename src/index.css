@@ -1,0 +1,1046 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-robo-light text-robo-dark font-body antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Animações CSS para o Mascote em puro HTML/CSS */
+@keyframes waveLeftArm {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-25deg);
+  }
+}
+
+@keyframes waveRightArm {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(25deg);
+  }
+}
+
+@keyframes floatHead {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes blinkEyes {
+  0%, 90%, 100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+.animate-wave-left {
+  animation: waveLeftArm 1.8s infinite ease-in-out;
+}
+
+.animate-wave-right {
+  animation: waveRightArm 2s infinite ease-in-out;
+}
+
+.animate-float-head {
+  animation: floatHead 3s infinite ease-in-out;
+}
+
+.animate-blink-eyes {
+  animation: blinkEyes 4s infinite ease-in-out;
+}
+
+/* Animações das Flores em Puro HTML/CSS */
+@keyframes flowerSway {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(6deg) scale(1.03);
+  }
+  75% {
+    transform: rotate(-6deg) scale(0.98);
+  }
+}
+
+@keyframes stemSway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+.animate-flower-sway {
+  animation: flowerSway 3.5s infinite ease-in-out;
+}
+
+.animate-stem-sway {
+  animation: stemSway 4s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   ANIMAÇÃO DE ENCAIXE E SALTO DOS BLOCOS LEGO
+   ========================================================================== */
+@keyframes legoSnap {
+  0% {
+    transform: translateY(-28px) scale(1.1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(5px) scale(0.95);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes legoBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-lego-snap {
+  animation: legoSnap 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-lego-bounce {
+  animation: legoBounce 0.6s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E9ECEF;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #118AB2;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0B6483;
+}
+
+/* ==========================================================================
+   CSS WIZARD & SCIENTIST ROBOT ANIMATIONS (100% HTML/CSS CODEPEN STYLE)
+   ========================================================================== */
+
+.scene-container {
+  width: 100%;
+  max-width: 220px;
+  height: 250px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.objects-orbit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+}
+
+.floating-object {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.obj-square {
+  bottom: 20px;
+  left: 0px;
+  background: #FFD166;
+  border: 3px solid #0f172a;
+  animation: path_square 10s ease-in-out infinite;
+}
+
+.obj-circle {
+  top: 10px;
+  right: 0px;
+  border-radius: 50%;
+  background: #38BDF8;
+  border: 3px solid #0f172a;
+  animation: path_circle 10s ease-in-out infinite;
+}
+
+.obj-triangle {
+  top: 90px;
+  left: -5px;
+  background: #C084FC;
+  border: 3px solid #0f172a;
+  animation: path_triangle 10s ease-in-out infinite;
+}
+
+/* Robot Wizard / Scientist Structure */
+.wizard-robot {
+  position: relative;
+  width: 190px;
+  height: 240px;
+}
+
+.robot-body {
+  position: absolute;
+  bottom: 0;
+  left: 68px;
+  height: 100px;
+  width: 60px;
+  background: #118AB2;
+  border-radius: 12px 12px 0 0;
+  border: 3px solid #0f172a;
+}
+
+.wizard-robot.--scientist .robot-body {
+  background: #7209B7;
+}
+
+.robot-body::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  height: 100px;
+  width: 60px;
+  background: #118AB2;
+  transform: skewX(14deg);
+  border-radius: 0 0 12px 0;
+  border-right: 3px solid #0f172a;
+  border-bottom: 3px solid #0f172a;
+}
+
+.wizard-robot.--scientist .robot-body::after {
+  background: #7209B7;
+}
+
+.robot-right-arm {
+  position: absolute;
+  bottom: 74px;
+  left: 110px;
+  height: 44px;
+  width: 90px;
+  background: #118AB2;
+  border-radius: 22px;
+  border: 3px solid #0f172a;
+  transform-origin: 16px 22px;
+  transform: rotate(70deg);
+  animation: wizard_right_arm 10s ease-in-out infinite;
+}
+
+.wizard-robot.--scientist .robot-right-arm {
+  background: #7209B7;
+}
+
+.robot-right-hand {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #FFD166;
+  border: 2px solid #0f172a;
+  transform-origin: center center;
+  transform: rotate(-40deg);
+  animation: wizard_right_hand 10s ease-in-out infinite;
+}
+
+.robot-right-hand::after {
+  content: "";
+  position: absolute;
+  right: 0px;
+  top: -8px;
+  width: 15px;
+  height: 30px;
+  border-radius: 10px;
+  background: #FFD166;
+  border: 2px solid #0f172a;
+  transform: translateY(16px);
+  animation: wizard_right_finger 10s ease-in-out infinite;
+}
+
+.robot-left-arm {
+  position: absolute;
+  bottom: 74px;
+  left: 26px;
+  height: 44px;
+  width: 70px;
+  background: #118AB2;
+  border-bottom-left-radius: 8px;
+  border: 3px solid #0f172a;
+  transform-origin: 60px 26px;
+  transform: rotate(-70deg);
+  animation: wizard_left_arm 10s ease-in-out infinite;
+}
+
+.wizard-robot.--scientist .robot-left-arm {
+  background: #7209B7;
+}
+
+.robot-left-hand {
+  position: absolute;
+  left: -18px;
+  top: 0;
+  width: 18px;
+  height: 30px;
+  border-top-left-radius: 35px;
+  border-bottom-left-radius: 35px;
+  background: #FFD166;
+  border: 2px solid #0f172a;
+}
+
+.robot-left-hand::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 30px;
+  height: 15px;
+  border-radius: 20px;
+  background: #FFD166;
+  border: 2px solid #0f172a;
+  transform-origin: right bottom;
+  transform: scaleX(0);
+  animation: wizard_left_finger 10s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   CUSTOM CHARACTER DESIGN SILHOUETTES & GEOMETRIC SHAPES
+   ========================================================================== */
+
+/* ROBI (O GUIA) — Silhouette: Rounded Capsule & Sphere */
+.wizard-robot.--robi .robot-body {
+  background: #118AB2;
+  border-radius: 28px 28px 12px 12px;
+  width: 66px;
+  height: 96px;
+}
+.wizard-robot.--robi .robot-body::after {
+  background: #118AB2;
+}
+.wizard-robot.--robi .robot-face.--standard-bot {
+  background: #38BDF8;
+  border-radius: 30px;
+  width: 100px;
+  height: 72px;
+}
+
+/* BYTE (ENGENHEIRO) — Silhouette: Heavy Metal Industrial Square Block */
+.wizard-robot.--byte .robot-body {
+  background: #FF9F1C;
+  border-radius: 8px;
+  width: 82px;
+  height: 105px;
+  left: 58px;
+}
+.wizard-robot.--byte .robot-body::after {
+  display: none; /* No skewed tail for heavy cubic Byte */
+}
+.wizard-robot.--byte .robot-face.--standard-bot {
+  background: #F59E0B;
+  border-radius: 12px;
+  width: 114px;
+  height: 78px;
+  left: 24px;
+}
+.wizard-robot.--byte .robot-ear {
+  width: 16px;
+  height: 28px;
+  border-radius: 4px;
+  background: #D97706;
+}
+
+/* VOLT (ELÉTRICO) — Silhouette: Tall Cylindrical Tesla Battery Tower */
+.wizard-robot.--volt .robot-body {
+  background: #7209B7;
+  border-radius: 32px 32px 16px 16px;
+  width: 56px;
+  height: 115px;
+  left: 72px;
+}
+.wizard-robot.--volt .robot-body::after {
+  background: #5B21B6;
+  border-radius: 0 0 16px 0;
+}
+.wizard-robot.--volt .robot-face.--standard-bot {
+  background: #9D4EDD;
+  border-radius: 40px 40px 18px 18px;
+  width: 92px;
+  height: 82px;
+  left: 34px;
+}
+.wizard-robot.--volt .robot-ear {
+  width: 10px;
+  height: 36px;
+  border-radius: 20px 0 0 20px;
+  background: #C084FC;
+}
+
+/* SPARK (PROGRAMADOR) — Silhouette: Modular Scratch Code Puzzle Block */
+.wizard-robot.--spark .robot-body {
+  background: #06D6A0;
+  border-radius: 14px 14px 6px 6px;
+  width: 72px;
+  height: 98px;
+  left: 64px;
+}
+.wizard-robot.--spark .robot-body::after {
+  background: #059669;
+}
+.wizard-robot.--spark .robot-face.--standard-bot {
+  background: #34D399;
+  border-radius: 18px;
+  width: 108px;
+  height: 74px;
+  left: 26px;
+  border-top: 6px solid #10B981;
+}
+.wizard-robot.--spark .robot-ear {
+  width: 14px;
+  height: 24px;
+  border-radius: 8px;
+  background: #A7F3D0;
+}
+
+/* Standard Bot Head, Visor & Ears */
+.robot-face.--standard-bot {
+  width: 100px;
+  height: 75px;
+  background: #38BDF8;
+  border: 4px solid #0f172a;
+  border-radius: 24px;
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.robot-ear {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 22px;
+  background: #FFD166;
+  border: 3px solid #0f172a;
+  border-radius: 6px;
+}
+
+.robot-ear.--left {
+  left: -14px;
+}
+
+.robot-ear.--right {
+  right: -14px;
+}
+
+.robot-eyes.--standard-visor {
+  width: 74px;
+  height: 32px;
+  background: #0f172a;
+  border-radius: 14px;
+  border: 2px solid #38BDF8;
+}
+
+.robot-head {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  width: 160px;
+  height: 210px;
+  transform-origin: center center;
+  transform: rotate(-3deg);
+  animation: wizard_head 10s ease-in-out infinite;
+}
+
+.robot-beard {
+  position: absolute;
+  bottom: 0;
+  left: 38px;
+  height: 106px;
+  width: 80px;
+  border-bottom-right-radius: 55%;
+  background: #ffffff;
+  border: 3px solid #0f172a;
+}
+
+.robot-beard::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: -10px;
+  width: 40px;
+  height: 20px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 2px solid #0f172a;
+}
+
+.robot-face {
+  position: absolute;
+  bottom: 76px;
+  left: 38px;
+  height: 30px;
+  width: 60px;
+  background: #FFD166;
+  border: 3px solid #0f172a;
+  border-radius: 8px;
+}
+
+.robot-face::before {
+  content: "";
+  position: absolute;
+  top: 0px;
+  left: 40px;
+  width: 20px;
+  height: 40px;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  background: #FFD166;
+  border: 2px solid #0f172a;
+}
+
+.robot-face::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: -10px;
+  width: 50px;
+  height: 20px;
+  border-radius: 20px;
+  border-bottom-right-radius: 0px;
+  background: #ffffff;
+}
+
+.robot-eyes {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 44px;
+  height: 16px;
+  background: #0f172a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+  z-index: 20;
+}
+
+.robot-eyes::before,
+.robot-eyes::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #38BDF8;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #38BDF8;
+}
+
+.robot-hat {
+  position: absolute;
+  bottom: 106px;
+  left: 0;
+  width: 160px;
+  height: 20px;
+  border-radius: 20px;
+  background: #118AB2;
+  border: 3px solid #0f172a;
+}
+
+.wizard-robot.--scientist .robot-hat {
+  background: #7209B7;
+}
+
+.robot-hat::before {
+  content: "";
+  position: absolute;
+  top: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 34px 70px 50px;
+  border-color: transparent transparent #118AB2 transparent;
+}
+
+.wizard-robot.--scientist .robot-hat::before {
+  border-color: transparent transparent #7209B7 transparent;
+}
+
+.robot-hat-tip {
+  position: absolute;
+  bottom: 78px;
+  left: 79px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 25px 25px 19px;
+  border-color: transparent transparent #118AB2 transparent;
+}
+
+.wizard-robot.--scientist .robot-hat-tip {
+  border-color: transparent transparent #7209B7 transparent;
+}
+
+.robot-hat-tip::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: -4px;
+  width: 35px;
+  height: 10px;
+  border-radius: 10px;
+  border-bottom-left-radius: 0px;
+  background: #118AB2;
+  transform: rotate(40deg);
+}
+
+.wizard-robot.--scientist .robot-hat-tip::after {
+  background: #7209B7;
+}
+
+.star {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+}
+
+.star::after,
+.star::before {
+  content: "";
+  position: absolute;
+  background: #FFD166;
+  display: block;
+  left: 0;
+  width: 14px;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  transform: rotate(66.66deg) skewX(45deg);
+}
+
+.star::after {
+  transform: rotate(156.66deg) skew(45deg);
+}
+
+.star.--first {
+  bottom: 28px;
+  left: 46px;
+}
+
+.star.--second {
+  bottom: 40px;
+  left: 80px;
+}
+
+.star.--third {
+  bottom: 15px;
+  left: 108px;
+}
+
+/* Keyframes matching CodePen 10s Timeline */
+@keyframes wizard_right_arm {
+  0% { transform: rotate(70deg); }
+  10% { transform: rotate(8deg); }
+  15% { transform: rotate(20deg); }
+  20% { transform: rotate(10deg); }
+  25% { transform: rotate(26deg); }
+  30% { transform: rotate(10deg); }
+  35% { transform: rotate(28deg); }
+  40% { transform: rotate(9deg); }
+  45% { transform: rotate(28deg); }
+  50% { transform: rotate(8deg); }
+  58% { transform: rotate(74deg); }
+  62% { transform: rotate(70deg); }
+  100% { transform: rotate(70deg); }
+}
+
+@keyframes wizard_left_arm {
+  0% { transform: rotate(-70deg); }
+  10% { transform: rotate(6deg); }
+  15% { transform: rotate(-18deg); }
+  20% { transform: rotate(5deg); }
+  25% { transform: rotate(-18deg); }
+  30% { transform: rotate(5deg); }
+  35% { transform: rotate(-17deg); }
+  40% { transform: rotate(5deg); }
+  45% { transform: rotate(-18deg); }
+  50% { transform: rotate(6deg); }
+  58% { transform: rotate(-74deg); }
+  62% { transform: rotate(-70deg); }
+  100% { transform: rotate(-70deg); }
+}
+
+@keyframes wizard_right_hand {
+  0% { transform: rotate(-40deg); }
+  10% { transform: rotate(-20deg); }
+  15% { transform: rotate(-5deg); }
+  20% { transform: rotate(-60deg); }
+  25% { transform: rotate(0deg); }
+  30% { transform: rotate(-60deg); }
+  35% { transform: rotate(0deg); }
+  40% { transform: rotate(-40deg); }
+  45% { transform: rotate(-60deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(-40deg); }
+  100% { transform: rotate(-40deg); }
+}
+
+@keyframes wizard_right_finger {
+  0% { transform: translateY(16px); }
+  10% { transform: none; }
+  50% { transform: none; }
+  60% { transform: translateY(16px); }
+  100% { transform: translateY(16px); }
+}
+
+@keyframes wizard_left_finger {
+  0% { transform: scaleX(0); }
+  10% { transform: scaleX(1) rotate(6deg); }
+  15% { transform: scaleX(1) rotate(0deg); }
+  20% { transform: scaleX(1) rotate(8deg); }
+  25% { transform: scaleX(1) rotate(0deg); }
+  30% { transform: scaleX(1) rotate(7deg); }
+  35% { transform: scaleX(1) rotate(0deg); }
+  40% { transform: scaleX(1) rotate(5deg); }
+  45% { transform: scaleX(1) rotate(0deg); }
+  50% { transform: scaleX(1) rotate(6deg); }
+  58% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+
+@keyframes wizard_head {
+  0% { transform: rotate(-3deg); }
+  10% { transform: translateX(10px) rotate(7deg); }
+  50% { transform: translateX(0px) rotate(0deg); }
+  56% { transform: rotate(-3deg); }
+  100% { transform: rotate(-3deg); }
+}
+
+@keyframes path_square {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-35px) rotate(180deg); }
+  100% { transform: translateY(0px) rotate(360deg); }
+}
+
+@keyframes path_circle {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-30px, 25px) scale(1.15); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes path_triangle {
+  0% { transform: translate(0px, 0px) rotate(0deg); }
+  50% { transform: translate(25px, -20px) rotate(-180deg); }
+  100% { transform: translate(0px, 0px) rotate(-360deg); }
+}
+
+/* ==========================================================================
+   CSS BMO RETRO BOT (CODEPEN STYLE)
+   ========================================================================== */
+
+.bmo-container {
+  position: relative;
+  background: linear-gradient(to bottom, #007188, #007188);
+  height: 380px; 
+  width: 320px;
+  border-top-right-radius: 70px;
+  border-top-left-radius: 70px;
+  border: 4px solid #0e3457;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  user-select: none;
+  overflow: hidden;
+}
+
+.bmo-container.--vibrate {
+  animation: bmo_vibrate 0.5s cubic-bezier(.36, .07, .19, .97) infinite;
+}
+
+.bmo-body-inner {
+  position: absolute;
+  top: 0; left: 0;
+  background: linear-gradient(to bottom, #007288, #09b0a8);
+  height: 380px; width: 250px;
+  border-top-right-radius: 70px;
+  border-top-left-radius: 70px;
+}
+
+.bmo-screen-frame {
+  position: absolute;
+  top: 35px; left: 40px;
+  background: linear-gradient(to bottom, #0e3659, #007187);
+  height: 160px; width: 180px;
+  border-radius: 26px;
+  border: 3px solid #0e3457;
+}
+
+.bmo-screen-frame::after {
+  content: "";
+  position: absolute;
+  top: 0px; right: 0px;
+  background: linear-gradient(to bottom, #d0e6d4, #d1e7d5);
+  height: 154px; width: 165px;
+  border-radius: 24px;
+  box-shadow: -5px 4px 10px 3px rgba(0, 0, 0, 0.25) inset;
+}
+
+.bmo-face {
+  position: absolute;
+  top: 45px; left: 65px;
+  width: 140px; height: 140px;
+  z-index: 20;
+}
+
+.bmo-eyes {
+  position: absolute;
+  top: 25px; right: 10px;
+  width: 100px; height: 20px;
+}
+
+.bmo-eyes::after, .bmo-eyes::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: bmo_blink 4s linear infinite;
+  width: 20px; height: 20px;
+  background-color: #0e3457;
+  border-radius: 50%;
+}
+
+.bmo-eyes::after {
+  left: 0;
+}
+
+.bmo-eyes::before {
+  right: 0;
+}
+
+.bmo-mouth {
+  position: absolute;
+  top: 70px; right: 8px;
+  width: 100px; height: 40px;
+}
+
+.bmo-mouth::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%; 
+  transform: translate(-50%, -50%);
+  height: 0px; width: 80px;
+  border-bottom: 4px solid #0e3457;
+  border-radius: 2px;
+}
+
+.bmo-cd-slot {
+  position: absolute;
+  top: 215px; left: 40px;
+  height: 24px; width: 130px;
+  border-radius: 8px;
+  background: #0e3457;
+  z-index: 10;
+}
+
+.bmo-cd-slot::before {
+  content: "";
+  position: absolute;
+  top: 0px; right: 0px;
+  height: 24px; width: 110px;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #026881, #0e3659);
+}
+
+.bmo-cd-slot::after {
+  content: "";
+  position: absolute;
+  top: 0px; right: -55px;
+  height: 24px; width: 24px;
+  border-radius: 50%;
+  background: #007188;
+}
+
+.bmo-btn-triangle {
+  position: absolute;
+  top: 260px; left: 155px;
+  width: 0; height: 0;
+  border-left: 8px solid #00c1d9;
+  border-right: 20px solid transparent;
+  border-bottom: 36px solid #00c1d9;
+  cursor: pointer;
+  transition: transform 0.1s;
+  z-index: 15;
+}
+
+.bmo-btn-triangle::after {
+  content: "";
+  position: absolute;
+  top: 0px; right: -12px;
+  width: 0; height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 36px solid #13ccdf;
+  transition: 100ms;
+}
+
+.bmo-btn-triangle:hover::after {
+  right: -14px;
+}
+
+.bmo-btn-circle {
+  position: absolute;
+  top: 295px; left: 190px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: #38bf6b;
+  cursor: pointer;
+  z-index: 15;
+}
+
+.bmo-btn-circle::after {
+  content: "";
+  position: absolute;
+  right: 5px; top: 0;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: #67c960;
+  transition: 100ms;
+}
+
+.bmo-btn-circle:hover::after {
+  right: 3px;
+}
+
+.bmo-btn-dpad {
+  position: absolute;
+  top: 290px; left: 45px;
+  width: 70px; height: 24px;
+  border-radius: 5px;
+  background: #f99e2a;
+  cursor: pointer;
+  z-index: 15;
+}
+
+.bmo-btn-dpad::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px; height: 70px;
+  border-radius: 5px;
+  background: #f99e2a;
+}
+
+.bmo-btn-dpad-top {
+  position: absolute;
+  top: 0px; right: 6px;
+  width: 70px; height: 24px;
+  border-radius: 5px;
+  background: #fdbe2c;
+}
+
+.bmo-btn-dpad-top::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px; height: 70px;
+  border-radius: 5px;
+  background: #fdbe2c;
+}
+
+.bmo-btn-dpad-top::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #f99e2a;
+}
+
+.bmo-btn-dpad:hover .bmo-btn-dpad-top {
+  right: 4px;
+}
+
+.bmo-speaker {
+  position: absolute;
+  top: 70px; right: 10px;
+  width: 60px; height: 80px;
+}
+
+.bmo-speaker-dot {
+  position: absolute;
+  height: 8px; width: 8px;
+  border-radius: 50%;
+  background: #0e3457;
+}
+
+.bmo-letters {
+  position: absolute;
+  top: 145px; right: -10px;
+  font-family: sans-serif;
+  font-weight: 900;
+  font-size: 70px;
+  color: #0e3457;
+  transform: rotate(90deg);
+  user-select: none;
+}
+
+@keyframes bmo_vibrate {
+  0%, 2%, 4%, 6%, 8%, 10%, 12%, 14%, 16%, 18% {
+    transform: translate3d(-3px, 0, 0);
+  }
+  1%, 3%, 5%, 7%, 9%, 11%, 13%, 15%, 17%, 19% {
+    transform: translate3d(3px, 0, 0);
+  }
+  20%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes bmo_blink {
+  0%, 96%, 100% {
+    height: 20px;
+  }
+  98% {
+    height: 2px;
+  }
+}
+
+
