@@ -99,7 +99,12 @@ export const LegoFeed: React.FC<LegoFeedProps> = ({ onGoToStudio }) => {
       </div>
 
       {/* LISTA DE POSTS NO FEED DA TURMA */}
-      {posts.length === 0 ? (
+      {loading ? (
+        <Card variant="white" className="p-12 text-center space-y-3 border-4 border-slate-200 shadow-md">
+          <div className="w-10 h-10 border-4 border-robo-blue border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="font-extrabold text-slate-600 text-sm">Carregando criações da turma...</p>
+        </Card>
+      ) : posts.length === 0 ? (
         <Card variant="white" className="p-12 text-center space-y-4 border-4 border-slate-200 shadow-md">
           <div className="w-20 h-20 rounded-3xl bg-slate-100 border-4 border-slate-300 text-4xl mx-auto flex items-center justify-center shadow-inner">
             🧱

@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'yellow' | 'blue' | 'green' | 'orange' | 'purple' | 'gray' | 'danger';
+  variant?: 'yellow' | 'blue' | 'green' | 'orange' | 'purple' | 'gray' | 'danger' | 'white';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   isLoading?: boolean;
@@ -27,6 +27,7 @@ export const Button: React.FC<ButtonProps> = ({
     orange: 'bg-robo-orange hover:bg-robo-orange-light text-white shadow-3d-orange active:shadow-3d-pressed active:translate-y-1',
     purple: 'bg-robo-purple hover:bg-robo-purple-light text-white shadow-3d-purple active:shadow-3d-pressed active:translate-y-1',
     gray: 'bg-slate-200 hover:bg-slate-300 text-slate-700 shadow-3d-gray active:shadow-3d-pressed active:translate-y-1',
+    white: 'bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 shadow-3d-gray active:shadow-3d-pressed active:translate-y-1',
     danger: 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_0_0_#9F1239] active:shadow-3d-pressed active:translate-y-1'
   };
 
