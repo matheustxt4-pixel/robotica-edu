@@ -20,7 +20,7 @@ export const Login: React.FC = () => {
   // Student Form State
   const [nickname, setNickname] = useState('');
   const [studentPassword, setStudentPassword] = useState('');
-  const [classCode, setClassCode] = useState('ROB-4821');
+  const [classCode, setClassCode] = useState('ROB-YQHN');
   const [selectedGrade, setSelectedGrade] = useState(3);
   const [selectedAvatar, setSelectedAvatar] = useState('avatar_bot_blue');
   const [selectedMascot, setSelectedMascot] = useState<'robi' | 'byte' | 'volt' | 'spark' | 'wizard' | 'scientist' | 'bmo'>('robi');

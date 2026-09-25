@@ -243,7 +243,8 @@ class AuthService {
 
     // Buscar a turma correspondente pelo código informado
     const classRoom = await classService.getClassByCode(classCode);
-    if (isRegisterMode && !classRoom && classCode.toUpperCase() !== 'ROB-4821') {
+    const upperCode = classCode.toUpperCase().trim();
+    if (isRegisterMode && !classRoom && upperCode !== 'ROB-4821' && upperCode !== 'ROB-YQHN') {
       throw new Error(`A turma com código "${classCode}" não foi encontrada! Verifique o código fornecido pelo seu professor.`);
     }
 
