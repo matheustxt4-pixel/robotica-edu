@@ -208,6 +208,7 @@ export const LegoStudio: React.FC<LegoStudioProps> = ({ onPublishSuccess }) => {
       authorName: user.nickname || user.name || 'Aluno Robótica',
       authorAvatar: user.avatar || 'avatar_1',
       authorMascot: user.mascot || 'robi',
+      classId: user.classId || 'ROB-YQHN',
       grade: user.grade || 3,
       title: postTitle,
       bricks: bricks

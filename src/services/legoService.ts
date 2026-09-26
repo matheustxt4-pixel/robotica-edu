@@ -1,4 +1,4 @@
-import { doc, setDoc, getDocs, collection, query, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db, isFirebaseDemo } from '../config/firebase';
 import { LegoPost, LegoBrick } from '../types';
 
@@ -68,6 +68,43 @@ class LegoService {
   }
 
   /**
+   * Assinatura em TEMPO REAL (onSnapshot) para que todos os alunos da turma vejam as novidades no Mural LEGO na hora!
+   */
+  public subscribeToLegoPosts(classId: string | undefined, callback: (posts: LegoPost[]) => void): () => void {
+    if (isFirebaseDemo) {
+      callback(this.getStoredPosts().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      return () => {};
+    }
+
+    try {
+      const targetClass = (classId || 'ROB-YQHN').toUpperCase().trim();
+      const q = query(collection(db, 'lego_posts'));
+      return onSnapshot(q, (snap) => {
+        const firestorePosts: LegoPost[] = [];
+        snap.docs.forEach(d => {
+          const post = d.data() as LegoPost;
+          const postClass = (post.classId || 'ROB-YQHN').toUpperCase().trim();
+          if (postClass === targetClass || targetClass === 'ROB-YQHN' || !post.classId) {
+            firestorePosts.push(post);
+          }
+        });
+        firestorePosts.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        this.saveStoredPosts(firestorePosts);
+        callback(firestorePosts);
+      }, (err) => {
+        console.warn('Erro na escuta real-time do Mural Lego:', err);
+        callback(this.getStoredPosts());
+      });
+    } catch (e) {
+      console.warn('Erro ao abrir conexao em tempo real com Mural Lego:', e);
+      callback(this.getStoredPosts());
+      return () => {};
+    }
+  }
+
+  /**
    * Obtém as publicações do Mural LEGO do banco de dados (Firestore) com fallback local
    */
   public async getPosts(): Promise<LegoPost[]> {
@@ -107,6 +144,7 @@ class LegoService {
     authorMascotColor?: 'original' | 'gold' | 'cyber_purple' | 'emerald' | 'ruby_red' | 'dark_shadow';
     authorMascotBackground?: string;
     authorEquippedAccessories?: { hat?: string; back?: string; tool?: string };
+    classId?: string;
     grade: number;
     title: string;
     bricks: LegoBrick[];
@@ -120,6 +158,7 @@ class LegoService {
       authorMascotColor: params.authorMascotColor,
       authorMascotBackground: params.authorMascotBackground,
       authorEquippedAccessories: params.authorEquippedAccessories,
+      classId: params.classId || 'ROB-YQHN',
       grade: params.grade,
       title: params.title || 'Minha Criação LEGO 🧱',
       bricks: params.bricks,

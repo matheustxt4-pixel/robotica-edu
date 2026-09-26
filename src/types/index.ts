@@ -197,6 +197,7 @@ export interface LegoPost {
     back?: string;
     tool?: string;
   };
+  classId?: string;
   grade: number;
   title: string;
   bricks: LegoBrick[];

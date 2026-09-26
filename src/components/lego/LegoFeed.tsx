@@ -33,18 +33,14 @@ export const LegoFeed: React.FC<LegoFeedProps> = ({ onGoToStudio }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
     setLoading(true);
-    try {
-      const list = await legoService.getPosts();
-      setPosts(list);
-    } finally {
+    const unsubscribe = legoService.subscribeToLegoPosts(user?.classId, (newPosts) => {
+      setPosts(newPosts);
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, [user?.classId]);
 
   // Alternar Curtida ❤️ no Post
   const handleToggleLike = async (postId: string) => {
