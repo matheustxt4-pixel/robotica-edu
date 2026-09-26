@@ -264,11 +264,29 @@ class AuthService {
         throw new Error(`O apelido "${nickname}" não foi encontrado nesta turma! Verifique a grafia exata ou clique na aba "Criar Nova Conta" se este for seu primeiro acesso.`);
       }
 
-      // Verificar se o aluno está tentando entrar na turma correta onde se cadastrou
-      const registeredClass = (profile.classId || '').toUpperCase().trim();
-      if (registeredClass && registeredClass !== upperCode) {
-        throw new Error(`Sua conta de aluno está cadastrada na turma "${registeredClass}". Você não pode acessar a turma "${upperCode}" com esta conta!`);
+      // Buscar a turma de destino pelo código informado (ex: ROB-YQHN)
+      const targetClassRoom = await classService.getClassByCode(upperCode);
+      const targetClassId = targetClassRoom ? targetClassRoom.id : upperCode;
+
+      // Buscar turma cadastrada no perfil do aluno
+      const studentClassId = profile.classId || '';
+      const studentClassRoom = await classService.getClassById(studentClassId);
+      const studentClassCode = studentClassRoom ? studentClassRoom.classCode : studentClassId.toUpperCase();
+
+      // Verificar equivalência entre turmas
+      const aliasGroup = ['class_demo_3a', 'apice', 'rob-4821', 'rob-yqhn'];
+      const isSameClass = 
+        studentClassId === targetClassId ||
+        studentClassId.toUpperCase() === upperCode ||
+        studentClassCode === upperCode ||
+        (aliasGroup.includes(studentClassId.toLowerCase()) && aliasGroup.includes(upperCode.toLowerCase()));
+
+      if (!isSameClass) {
+        throw new Error(`Sua conta de aluno está cadastrada na turma "${studentClassCode}". Você não pode acessar a turma "${upperCode}" com esta conta!`);
       }
+
+      // Atualizar o perfil com o ID resolvido da turma
+      profile.classId = targetClassId;
 
       // Verificar senha se o cadastro possui senha definida
       if (existingRecord?.password && password && existingRecord.password !== password) {
@@ -279,7 +297,7 @@ class AuthService {
       if (!isFirebaseDemo && profile.uid) {
         const firestoreProfile = await this.getUserProfile(profile.uid);
         if (firestoreProfile) {
-          profile = { ...profile, ...firestoreProfile };
+          profile = { ...profile, ...firestoreProfile, classId: targetClassId };
         }
       }
 
