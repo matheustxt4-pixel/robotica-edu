@@ -5,6 +5,7 @@ import { ClassRoom, UserProfile } from '../types';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/ui/Avatar';
+import { newsService, PlatformNews } from '../services/newsService';
 import { 
   Users, 
   Trophy, 
@@ -17,7 +18,9 @@ import {
   School,
   Flame,
   Star,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { GRADES } from '../config/constants';
 
@@ -43,6 +46,22 @@ export const TeacherDashboard: React.FC = () => {
 
   const [loadingAction, setLoadingAction] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Notícias de Atualização da Plataforma (Changelog para Professores)
+  const [newsList, setNewsList] = useState<PlatformNews[]>([]);
+  const [unreadNewsCount, setUnreadNewsCount] = useState<number>(0);
+  const [showNewsBanner, setShowNewsBanner] = useState<boolean>(true);
+  const [expandedNewsId, setExpandedNewsId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNewsList(newsService.getNews());
+    setUnreadNewsCount(newsService.getUnreadCount());
+  }, []);
+
+  const handleDismissNews = (newsId: string) => {
+    newsService.markAsRead(newsId);
+    setUnreadNewsCount(newsService.getUnreadCount());
+  };
 
   // Carrega as turmas do professor logado
   const loadClasses = async () => {
@@ -228,6 +247,99 @@ export const TeacherDashboard: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* CARD DE NOTÍCIAS DE ATUALIZAÇÃO PARA O PROFESSOR */}
+      {showNewsBanner && newsList.length > 0 && (
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white p-6 rounded-3xl border-4 border-amber-300 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+                📢
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-white text-amber-950 font-black px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
+                    Notícias de Atualização
+                  </span>
+                  {unreadNewsCount > 0 && (
+                    <span className="bg-rose-900 text-white font-black px-2 py-0.5 rounded-full text-[10px] uppercase animate-pulse">
+                      {unreadNewsCount} {unreadNewsCount === 1 ? 'Nova' : 'Novas'}!
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-xl font-black text-white mt-0.5">
+                  Atualizações & Novidades da Plataforma (25/09) 🚀
+                </h3>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowNewsBanner(false)}
+              className="text-xs font-extrabold text-amber-100 hover:text-white bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-xl transition-all self-end sm:self-auto cursor-pointer"
+            >
+              Recolher Notícias ✕
+            </button>
+          </div>
+
+          <div className="space-y-3 pt-1">
+            {newsList.map(news => {
+              const isRead = newsService.getReadNewsIds().includes(news.id);
+              const isExpanded = expandedNewsId === news.id || news.isImportant;
+
+              return (
+                <div key={news.id} className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="bg-amber-300 text-amber-950 font-black px-2.5 py-0.5 rounded-lg text-xs">
+                        {news.date} • {news.version}
+                      </span>
+                      <h4 className="font-extrabold text-white text-sm">{news.title}</h4>
+                      {!isRead && (
+                        <span className="bg-amber-400 text-amber-950 font-black text-[10px] px-2 py-0.5 rounded uppercase">
+                          {news.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => setExpandedNewsId(isExpanded && !news.isImportant ? null : news.id)}
+                      className="text-xs font-bold text-amber-100 hover:text-white underline flex items-center gap-1 cursor-pointer"
+                    >
+                      {isExpanded ? (
+                        <><span>Recolher</span><ChevronUp className="w-4 h-4" /></>
+                      ) : (
+                        <><span>Ver Detalhes</span><ChevronDown className="w-4 h-4" /></>
+                      )}
+                    </button>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="space-y-1.5 pt-2 border-t border-white/15 text-xs text-amber-50 font-bold">
+                      {news.improvements.map((item, idx) => (
+                        <p key={idx} className="flex items-start gap-2">
+                          <span className="text-amber-200 font-black">•</span>
+                          <span>{item}</span>
+                        </p>
+                      ))}
+
+                      {!isRead && (
+                        <div className="pt-2 text-right">
+                          <button
+                            onClick={() => handleDismissNews(news.id)}
+                            className="bg-white text-slate-800 hover:bg-amber-100 font-black px-3.5 py-1.5 rounded-xl text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
+                          >
+                            ✓ Marcar como Lido
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Métricas da Turma Selecionada */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
