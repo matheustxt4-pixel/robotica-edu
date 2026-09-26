@@ -1,3 +1,5 @@
+import { doc, updateDoc, increment, setDoc } from 'firebase/firestore';
+import { db, isFirebaseDemo } from '../config/firebase';
 import { DEFAULT_XP_REWARDS } from '../config/constants';
 import { calculateLevelFromXP } from '../config/xpRules';
 import { XPEvent, UserProfile } from '../types';
@@ -68,6 +70,27 @@ class XPService {
 
     if (xpGained > 0) {
       this.recordEvent(event);
+
+      // Persistência atômica no Firestore para nunca perder XP
+      if (!isFirebaseDemo) {
+        try {
+          const userRef = doc(db, 'users', studentId);
+          updateDoc(userRef, {
+            xp: increment(xpGained),
+            level: newLevel
+          }).catch(err => console.warn('Persistindo XP offline:', err));
+
+          const lbRef = doc(db, 'leaderboard', studentId);
+          setDoc(lbRef, {
+            studentId,
+            xp: newTotalXP,
+            level: newLevel,
+            updatedAt: new Date().toISOString()
+          }, { merge: true }).catch(err => console.warn('Atualizando leaderboard offline:', err));
+        } catch (e) {
+          console.warn('Erro ao disparar atualização de XP no Firestore:', e);
+        }
+      }
     }
 
     return {
