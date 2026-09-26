@@ -155,9 +155,9 @@ class LegoService {
       authorName: params.authorName,
       authorAvatar: params.authorAvatar,
       authorMascot: params.authorMascot,
-      authorMascotColor: params.authorMascotColor,
-      authorMascotBackground: params.authorMascotBackground,
-      authorEquippedAccessories: params.authorEquippedAccessories,
+      ...(params.authorMascotColor ? { authorMascotColor: params.authorMascotColor } : {}),
+      ...(params.authorMascotBackground ? { authorMascotBackground: params.authorMascotBackground } : {}),
+      ...(params.authorEquippedAccessories ? { authorEquippedAccessories: params.authorEquippedAccessories } : {}),
       classId: params.classId || 'ROB-YQHN',
       grade: params.grade,
       title: params.title || 'Minha Criação LEGO 🧱',
@@ -172,7 +172,8 @@ class LegoService {
 
     if (!isFirebaseDemo) {
       try {
-        await setDoc(doc(db, 'lego_posts', newPost.id), newPost);
+        const cleanPostData = JSON.parse(JSON.stringify(newPost));
+        await setDoc(doc(db, 'lego_posts', newPost.id), cleanPostData);
       } catch (e) {
         console.error('Erro ao salvar publicação LEGO no Firestore:', e);
       }
@@ -204,7 +205,8 @@ class LegoService {
 
     if (!isFirebaseDemo) {
       try {
-        await setDoc(doc(db, 'lego_posts', postId), post, { merge: true });
+        const cleanPostData = JSON.parse(JSON.stringify(post));
+        await setDoc(doc(db, 'lego_posts', postId), cleanPostData, { merge: true });
       } catch (e) {
         console.error('Erro ao atualizar curtida no Firestore:', e);
       }
