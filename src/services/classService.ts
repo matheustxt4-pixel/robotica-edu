@@ -59,20 +59,36 @@ class ClassService {
    * Busca todas as turmas de um determinado professor
    */
   public async getClassesByTeacher(teacherId: string): Promise<ClassRoom[]> {
+    let classesList: ClassRoom[] = [];
+
     if (!isFirebaseDemo) {
       try {
         const q = query(collection(db, 'classes'), where('teacherId', '==', teacherId));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          return snap.docs.map(d => d.data() as ClassRoom);
+          classesList = snap.docs.map(d => d.data() as ClassRoom);
         }
       } catch (e) {
         console.warn('Buscando turmas locais:', e);
       }
     }
 
-    const local = this.getLocalClasses();
-    return local.filter(c => c.teacherId === teacherId);
+    if (classesList.length === 0) {
+      const local = this.getLocalClasses();
+      classesList = local.filter(c => c.teacherId === teacherId || c.teacherId === 'teacher_demo_456');
+    }
+
+    // Garantir que a turma "apice" ou principal utilize o código ROB-YQHN
+    classesList.forEach(cls => {
+      if (cls.name.toLowerCase().includes('apice') || cls.name.toLowerCase().includes('ápice') || cls.classCode === 'ROB-4821') {
+        cls.classCode = 'ROB-YQHN';
+        if (!isFirebaseDemo && cls.id) {
+          setDoc(doc(db, 'classes', cls.id), { classCode: 'ROB-YQHN' }, { merge: true }).catch(() => {});
+        }
+      }
+    });
+
+    return classesList;
   }
 
   /**
@@ -141,104 +157,141 @@ class ClassService {
   public async getStudentsByClass(classId: string): Promise<UserProfile[]> {
     const studentMap = new Map<string, UserProfile>();
 
-    // 1. Buscar do LocalStorage (registered students)
+    const targetStudents: UserProfile[] = [
+      {
+        uid: 'student_samuel_100',
+        name: 'samuel',
+        nickname: 'bebel',
+        email: 'bebel@aluno.local',
+        role: 'student',
+        classId: classId,
+        teacherId: 'teacher_demo_456',
+        grade: 3,
+        avatar: 'avatar_bot_blue',
+        mascot: 'volt',
+        xp: 100,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      },
+      {
+        uid: 'student_perola_100',
+        name: 'pérola',
+        nickname: 'pepelzinha',
+        email: 'pepelzinha@aluno.local',
+        role: 'student',
+        classId: classId,
+        teacherId: 'teacher_demo_456',
+        grade: 3,
+        avatar: 'avatar_bot_purple',
+        mascot: 'volt',
+        xp: 100,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      },
+      {
+        uid: 'student_bejamin_100',
+        name: 'Bejamin',
+        nickname: 'BJ',
+        email: 'bj@aluno.local',
+        role: 'student',
+        classId: classId,
+        teacherId: 'teacher_demo_456',
+        grade: 3,
+        avatar: 'avatar_bot_yellow',
+        mascot: 'spark',
+        xp: 100,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      },
+      {
+        uid: 'student_isaac_415',
+        name: 'Isaac',
+        nickname: 'Isaac',
+        email: 'isaac@aluno.local',
+        role: 'student',
+        classId: classId,
+        teacherId: 'teacher_demo_456',
+        grade: 3,
+        avatar: 'avatar_bot_green',
+        mascot: 'bmo',
+        xp: 415,
+        level: 2,
+        streak: 3,
+        createdAt: new Date().toISOString()
+      },
+      {
+        uid: 'student_lorenzo_100',
+        name: 'Lorenzo',
+        nickname: 'Lolo',
+        email: 'lolo@aluno.local',
+        role: 'student',
+        classId: classId,
+        teacherId: 'teacher_demo_456',
+        grade: 3,
+        avatar: 'avatar_bot_orange',
+        mascot: 'spark',
+        xp: 100,
+        level: 1,
+        streak: 1,
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    // 1. Preencher no LocalStorage de alunos registrados para que o login funcione
     try {
       const data = localStorage.getItem(this.registeredStudentsKey);
-      if (data) {
-        const parsed: Record<string, { password: string; profile: UserProfile }> = JSON.parse(data);
-        const classRoom = await this.getClassById(classId);
-        const targetCode = classRoom?.classCode;
+      const store = data ? JSON.parse(data) : {};
+      let updated = false;
 
-        Object.values(parsed).forEach(item => {
-          const p = item.profile;
-          if (p.classId === classId || p.classId === targetCode) {
-            studentMap.set(p.uid, { ...p, classId });
-          }
-        });
+      targetStudents.forEach(st => {
+        const key = st.nickname.toLowerCase();
+        if (!store[key]) {
+          store[key] = { password: '123', profile: st };
+          updated = true;
+        }
+      });
+
+      if (updated) {
+        localStorage.setItem(this.registeredStudentsKey, JSON.stringify(store));
       }
+
+      // Adicionar alunos do localStorage ao mapa
+      Object.values(store as Record<string, { password: string; profile: UserProfile }>).forEach(item => {
+        const p = item.profile;
+        if (p.classId === classId || p.classId === 'class_demo_3a' || p.classId === 'apice' || p.classId === 'ROB-YQHN') {
+          studentMap.set(p.uid || p.nickname, { ...p, classId });
+        }
+      });
     } catch (e) {
       console.warn('Erro ao buscar alunos cadastrados locais:', e);
     }
 
-    // 2. Se a turma for a de demonstração e estiver vazia, carrega alunos demo padrão
-    if (classId === 'class_demo_3a' && studentMap.size === 0) {
-      const demoStudents: UserProfile[] = [
-        {
-          uid: 'student_demo_1',
-          name: 'Ana Souza',
-          nickname: 'AnaRobô',
-          email: 'ana@aluno.local',
-          role: 'student',
-          classId: 'class_demo_3a',
-          teacherId: 'teacher_demo_456',
-          grade: 3,
-          avatar: 'avatar_bot_blue',
-          mascot: 'robi',
-          xp: 850,
-          level: 4,
-          streak: 5,
-          createdAt: new Date().toISOString()
-        },
-        {
-          uid: 'student_demo_123',
-          name: 'Lucas Silva',
-          nickname: 'LucasRobô',
-          email: 'lucas@aluno.local',
-          role: 'student',
-          classId: 'class_demo_3a',
-          teacherId: 'teacher_demo_456',
-          grade: 3,
-          avatar: 'avatar_bot_yellow',
-          mascot: 'byte',
-          xp: 790,
-          level: 3,
-          streak: 3,
-          createdAt: new Date().toISOString()
-        },
-        {
-          uid: 'student_demo_3',
-          name: 'Pedro Santos',
-          nickname: 'PedroTech',
-          email: 'pedro@aluno.local',
-          role: 'student',
-          classId: 'class_demo_3a',
-          teacherId: 'teacher_demo_456',
-          grade: 3,
-          avatar: 'avatar_bot_green',
-          mascot: 'volt',
-          xp: 620,
-          level: 3,
-          streak: 2,
-          createdAt: new Date().toISOString()
-        },
-        {
-          uid: 'student_demo_4',
-          name: 'Mariana Lima',
-          nickname: 'MariBot',
-          email: 'mariana@aluno.local',
-          role: 'student',
-          classId: 'class_demo_3a',
-          teacherId: 'teacher_demo_456',
-          grade: 3,
-          avatar: 'avatar_bot_purple',
-          mascot: 'spark',
-          xp: 540,
-          level: 2,
-          streak: 1,
-          createdAt: new Date().toISOString()
+    // 2. Se a turma ainda estiver com menos de 5 alunos, carrega os 5 alunos padrão para a turma ROB-YQHN
+    if (studentMap.size < 5) {
+      targetStudents.forEach(st => {
+        if (!studentMap.has(st.uid) && !studentMap.has(st.nickname)) {
+          studentMap.set(st.uid, st);
         }
-      ];
-      demoStudents.forEach(st => studentMap.set(st.uid, st));
+      });
     }
 
     // 3. Buscar do Firestore se não estiver em demo puro
     if (!isFirebaseDemo) {
       try {
-        const q = query(collection(db, 'users'), where('classId', '==', classId));
+        const q = query(collection(db, 'users'), where('role', '==', 'student'));
         const snap = await getDocs(q);
         snap.docs.forEach(d => {
           const profile = d.data() as UserProfile;
-          studentMap.set(profile.uid, profile);
+          if (profile.classId === classId || profile.classId === 'class_demo_3a' || profile.classId === 'apice' || profile.classId === 'ROB-YQHN' || profile.classId === 'ROB-4821') {
+            studentMap.set(profile.uid, { ...profile, classId });
+            // Atualizar no Firestore se o classId estiver desatualizado
+            if (profile.classId !== classId) {
+              setDoc(doc(db, 'users', profile.uid), { classId }, { merge: true }).catch(() => {});
+            }
+          }
         });
       } catch (e) {
         console.warn('Erro ao carregar alunos do Firestore:', e);
