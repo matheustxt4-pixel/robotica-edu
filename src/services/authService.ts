@@ -264,6 +264,12 @@ class AuthService {
         throw new Error(`O apelido "${nickname}" não foi encontrado nesta turma! Verifique a grafia exata ou clique na aba "Criar Nova Conta" se este for seu primeiro acesso.`);
       }
 
+      // Verificar se o aluno está tentando entrar na turma correta onde se cadastrou
+      const registeredClass = (profile.classId || '').toUpperCase().trim();
+      if (registeredClass && registeredClass !== upperCode) {
+        throw new Error(`Sua conta de aluno está cadastrada na turma "${registeredClass}". Você não pode acessar a turma "${upperCode}" com esta conta!`);
+      }
+
       // Verificar senha se o cadastro possui senha definida
       if (existingRecord?.password && password && existingRecord.password !== password) {
         throw new Error('Senha incorreta para esta conta de aluno! Verifique seus dados.');
